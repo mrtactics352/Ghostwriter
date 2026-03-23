@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Howl } from "howler";
-import { AlertCircle, Check, CloudOff, Focus, LoaderCircle, Save, Volume2, VolumeX } from "lucide-react";
+import { AlertCircle, Check, CloudOff, Focus, LoaderCircle, Save, Volume2, VolumeX, Palette } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -13,6 +13,9 @@ import { ZenSidebar } from "@/components/ZenSidebar";
 import { useWriterStats } from "@/hooks/useWriterStats";
 import { createEmptyDocument, isUuid } from "@/lib/editor";
 import { getSupabaseClient } from "@/lib/supabaseClient";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import StoryDocument from "@/components/StoryDocument";
+import CoverDesigner from "@/components/CoverDesigner";
 
 type DraftRecord = {
   body: Record<string, unknown>;
@@ -52,6 +55,8 @@ export function WriterDraft({ draftId }: { draftId: string }) {
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [isIdle, setIsIdle] = useState(false);
   const [focusFlash, setFocusFlash] = useState(false);
+  const [coverDesign, setCoverDesign] = useState<any>(null);
+  const [showCoverDesigner, setShowCoverDesigner] = useState(false);
   const clickSoundRef = useRef<Howl | null>(null);
   const lastTypedAt = useRef(Date.now());
   const hydratedDraftRef = useRef<string | null>(null);
@@ -164,6 +169,16 @@ export function WriterDraft({ draftId }: { draftId: string }) {
         throw error;
       }
 
+      const { data: savedCover } = await supabase
+        .from('cover_designs')
+        .select('*')
+        .eq('draft_id', draftId)
+        .single();
+      
+      if (savedCover) {
+        setCoverDesign(savedCover);
+      }
+
       const mergedBody = parsedCache?.body ?? data.body ?? createEmptyDocument();
       const mergedTitle = parsedCache?.title ?? data.title ?? "Untitled draft";
       const mergedWordCount = parsedCache?.wordCount ?? data.current_word_count ?? 0;
@@ -274,7 +289,7 @@ export function WriterDraft({ draftId }: { draftId: string }) {
     }
 
     setDailyBonusXp((value) => value + 10);
-    setFocusFlash(true);
+        setFocusFlash(true);
   };
 
   if (status === "loading") {
@@ -323,6 +338,8 @@ export function WriterDraft({ draftId }: { draftId: string }) {
       <ProgressGlow progress={stats.levelProgress} />
       <ZenSidebar currentStreak={stats.currentStreak} dailyGoal={stats.dailyGoal} todayWords={stats.todayWords} />
 
+      {showCoverDesigner && <CoverDesigner draftId={draftId} initialCoverData={coverDesign} onClose={() => setShowCoverDesigner(false)} onSave={setCoverDesign} />}
+
       {(isIdle || focusFlash) && (
         <div className="pointer-events-none fixed inset-0 z-30">
           <div className={`absolute inset-y-0 left-0 w-3 bg-gradient-to-r from-ember/35 to-transparent ${isIdle ? "animate-pulseEdge" : ""}`} />
@@ -366,6 +383,21 @@ export function WriterDraft({ draftId }: { draftId: string }) {
               <Focus className="h-4 w-4" />
               Refine {hasSelection ? "+10 XP" : "(select text)"}
             </button>
+            <button
+              type="button"
+              onClick={() => setShowCoverDesigner(true)}
+              className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 shadow-sm transition hover:bg-white"
+            >
+              <Palette className="h-4 w-4" />
+              Design Cover
+            </button>
+            <PDFDownloadLink
+              document={<StoryDocument title={title} author={coverDesign?.author || 'Author Name'} content={editor?.getText() || ''} coverDesign={coverDesign} />}
+              fileName={`${title.replace(/ /g, '_')}.pdf`}
+              className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2 text-parchment transition enabled:hover:bg-ink/90"
+            >
+              {({ loading }) => (loading ? "Generating PDF..." : "Download Manuscript")}
+            </PDFDownloadLink>
           </div>
         </header>
 
