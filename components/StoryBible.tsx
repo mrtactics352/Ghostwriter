@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -45,7 +44,7 @@ const DraggableCard = ({ element, children }: { element: StoryElement, children:
   }));
 
   return (
-    <div ref={drag} style={{ opacity: isDragging ? 0.5 : 1 }}>
+    <div ref={drag as React.Ref<HTMLDivElement>} style={{ opacity: isDragging ? 0.5 : 1 }}>
       {children}
     </div>
   );
@@ -61,7 +60,7 @@ const Droppable = ({ onDrop, children }: { onDrop: (item: CardDragItem) => void,
   }));
 
   return (
-    <div ref={drop} className={`${isOver ? 'bg-ember/20' : ''}`}>
+    <div ref={drop as React.Ref<HTMLDivElement>} className={`${isOver ? 'bg-ember/20' : ''}`}>
       {children}
     </div>
   );
