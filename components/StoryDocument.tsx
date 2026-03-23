@@ -24,13 +24,22 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   title: {
-    fontSize: 24,
-    marginBottom: 10,
+    fontSize: 48,
+    marginBottom: 20,
     fontFamily: 'Times-Roman',
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 24,
+    fontFamily: 'Times-Roman',
+    fontStyle: 'italic',
+    marginBottom: 30,
+    textAlign: 'center',
   },
   author: {
-    fontSize: 18,
+    fontSize: 22,
     fontFamily: 'Times-Roman',
+    textAlign: 'center',
   },
   body: {
     fontFamily: 'Times-Roman',
@@ -51,6 +60,7 @@ const StoryDocument: React.FC<StoryDocumentProps> = ({ title, author, content, c
     <Page size="A4" style={{...styles.page, backgroundColor: coverDesign?.background_color || '#FFFFFF'}}>
       <View style={styles.coverPage}>
         <Text style={{...styles.title, fontFamily: coverDesign?.typography === 'Serif' ? 'Times-Roman' : 'Helvetica'}}>{coverDesign?.title || title}</Text>
+        {coverDesign?.subtitle && <Text style={{...styles.subtitle, fontFamily: coverDesign?.typography === 'Serif' ? 'Times-Roman' : 'Helvetica'}}>{coverDesign.subtitle}</Text>}
         <Text style={{...styles.author, fontFamily: coverDesign?.typography === 'Serif' ? 'Times-Roman' : 'Helvetica'}}>{coverDesign?.author || author}</Text>
       </View>
     </Page>
