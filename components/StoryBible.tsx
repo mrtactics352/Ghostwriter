@@ -182,8 +182,16 @@ export function StoryBible({ draftId, editor }: StoryBibleProps) {
             <button onClick={() => handleAIFill(element.id)}><Wand2 className="w-4 h-4" /></button>
           </div>
         </div>
-        {element.details?.backstory && <p className="text-sm mt-2"><strong>Backstory:</strong> {element.details.backstory as string}</p>}
-        {element.details?.core_motivation && <p className="text-sm mt-2"><strong>Core Motivation:</strong> {element.details.core_motivation as string}</p>}
+        {typeof element.details?.backstory === 'string' && (
+          <p className="text-sm mt-2">
+            <strong>Backstory:</strong> {element.details.backstory}
+          </p>
+        )}
+        {typeof element.details?.core_motivation === 'string' && (
+          <p className="text-sm mt-2">
+            <strong>Core Motivation:</strong> {element.details.core_motivation}
+          </p>
+        )}
       </div>
     );
 
