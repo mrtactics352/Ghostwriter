@@ -3,6 +3,15 @@
 
 import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
 
+interface CoverDesign {
+  title: string;
+  subtitle: string;
+  author: string;
+  layout: string;
+  typography: string;
+  background_color: string;
+}
+
 const styles = StyleSheet.create({
   page: {
     padding: '1in',
@@ -34,14 +43,15 @@ interface StoryDocumentProps {
   title: string;
   author: string;
   content: string;
+  coverDesign: CoverDesign | null;
 }
 
-const StoryDocument: React.FC<StoryDocumentProps> = ({ title, author, content }) => (
+const StoryDocument: React.FC<StoryDocumentProps> = ({ title, author, content, coverDesign }) => (
   <Document>
-    <Page size="A4" style={styles.page}>
+    <Page size="A4" style={{...styles.page, backgroundColor: coverDesign?.background_color || '#FFFFFF'}}>
       <View style={styles.coverPage}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.author}>{author}</Text>
+        <Text style={{...styles.title, fontFamily: coverDesign?.typography === 'Serif' ? 'Times-Roman' : 'Helvetica'}}>{coverDesign?.title || title}</Text>
+        <Text style={{...styles.author, fontFamily: coverDesign?.typography === 'Serif' ? 'Times-Roman' : 'Helvetica'}}>{coverDesign?.author || author}</Text>
       </View>
     </Page>
     <Page size="A4" style={styles.page}>
