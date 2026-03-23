@@ -1,7 +1,7 @@
 'use server';
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
@@ -50,13 +50,14 @@ Paragraph: ${text}`;
 }
 
 export async function updateVoiceProfile(userId: string, text: string) {
+  const cookieStore = cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         get(name: string) {
-          return cookies().get(name)?.value
+          return cookieStore.get(name)?.value
         },
       },
     }
@@ -84,14 +85,15 @@ Text: ${text}`;
   }
 }
 
-export async function createStoryElement(draftId: string, name: string, type: string) {
+export async function createStoryElement(draftId: string, name: string, elementType: string) {
+  const cookieStore = cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         get(name: string) {
-          return cookies().get(name)?.value
+          return cookieStore.get(name)?.value
         },
       },
     }
@@ -105,7 +107,7 @@ export async function createStoryElement(draftId: string, name: string, type: st
 
   const { data, error } = await supabase
     .from("story_elements")
-    .insert({ draft_id: draftId, user_id: user.id, name, type, details: {} })
+    .insert({ draft_id: draftId, user_id: user.id, name, type: elementType, details: {} })
     .select();
 
   if (error) {
