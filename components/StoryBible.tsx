@@ -161,7 +161,7 @@ export function StoryBible({ draftId, editor }: StoryBibleProps) {
 
   const handleCardDrop = async (item: CardDragItem, target: StoryElement) => {
     if (item.type === 'character' && target.type === 'location') {
-      const sentence = await getCardFusion(.name, target.name);
+      const sentence = await getCardFusion(item.name, target.name);
       toast.success(sentence, { duration: 5000 });
     }
   };
