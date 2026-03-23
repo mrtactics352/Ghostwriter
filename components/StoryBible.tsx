@@ -1,7 +1,8 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import type { Editor } from "@tiptap/react";
 import { Users, MapPin, Calendar, Book, Wand2 } from "lucide-react";
 import { createStoryElement, getAICharacterDetails, getCardFusion } from "@/app/actions/ai";
 import { getSupabaseClient } from "@/lib/supabaseClient";
@@ -12,20 +13,26 @@ import { DndProvider } from 'react-dnd';
 
 interface StoryBibleProps {
   draftId: string;
-  editor: any;
+  editor: Editor;
 }
 
 interface StoryElement {
   id: string;
   name: string;
   type: string;
-  details: any;
+  details: Record<string, unknown>;
   level: number;
   xp: number;
 }
 
 const ItemTypes = {
   CARD: 'card',
+}
+
+interface CardDragItem {
+    id: string;
+    type: string;
+    name: string;
 }
 
 const DraggableCard = ({ element, children }: { element: StoryElement, children: React.ReactNode }) => {
@@ -44,10 +51,10 @@ const DraggableCard = ({ element, children }: { element: StoryElement, children:
   );
 };
 
-const Droppable = ({ onDrop, type, children }: { onDrop: (item: any) => void, type: string, children: React.ReactNode }) => {
+const Droppable = ({ onDrop, children }: { onDrop: (item: CardDragItem) => void, children: React.ReactNode }) => {
   const [{ isOver }, drop] = useDrop(() => ({
     accept: ItemTypes.CARD,
-    drop: (item) => onDrop(item),
+    drop: (item: CardDragItem) => onDrop(item),
     collect: (monitor) => ({
       isOver: !!monitor.isOver(),
     }),
@@ -65,6 +72,11 @@ export function StoryBible({ draftId, editor }: StoryBibleProps) {
   const [storyElements, setStoryElements] = useState<StoryElement[]>([]);
   const supabase = getSupabaseClient();
 
+  const handleCreateCharacter = useCallback(async (name: string) => {
+    const newElement = await createStoryElement(draftId, name, "character");
+    setStoryElements(elements => [...elements, newElement]);
+  }, [draftId]);
+
   useEffect(() => {
     const fetchStoryElements = async () => {
       const { data, error } = await supabase
@@ -79,7 +91,7 @@ export function StoryBible({ draftId, editor }: StoryBibleProps) {
       }
     };
 
-    fetchStoryElements();
+    void fetchStoryElements();
   }, [draftId, supabase]);
 
   useEffect(() => {
@@ -91,14 +103,14 @@ export function StoryBible({ draftId, editor }: StoryBibleProps) {
               <div className="flex items-start">
                 <div className="ml-3 flex-1">
                   <p className="text-sm font-medium text-gray-900">New Character Detected</p>
-                  <p className="mt-1 text-sm text-gray-500">A new character, "{name}", has been detected. Would you like to create a card for them?</p>
+                  <p className="mt-1 text-sm text-gray-500">A new character, &ldquo;{name}&rdquo;, has been detected. Would you like to create a card for them?</p>
                 </div>
               </div>
             </div>
             <div className="flex border-l border-gray-200">
               <button
                 onClick={() => {
-                  handleCreateCharacter(name);
+                  void handleCreateCharacter(name);
                   toast.dismiss(t.id);
                 }}
                 className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -122,12 +134,7 @@ export function StoryBible({ draftId, editor }: StoryBibleProps) {
     const interval = setInterval(detectNewNames, 5000);
 
     return () => clearInterval(interval);
-  }, [editor, storyElements]);
-
-  const handleCreateCharacter = async (name: string) => {
-    const newElement = await createStoryElement(draftId, name, "character");
-    setStoryElements([...storyElements, newElement]);
-  };
+  }, [editor, storyElements, handleCreateCharacter]);
 
   const handleAIFill = async (elementId: string) => {
     const element = storyElements.find(el => el.id === elementId);
@@ -148,7 +155,7 @@ export function StoryBible({ draftId, editor }: StoryBibleProps) {
     }
   };
 
-  const handleCardDrop = async (item: any, target: StoryElement) => {
+  const handleCardDrop = async (item: CardDragItem, target: StoryElement) => {
     if (item.type === 'character' && target.type === 'location') {
       const sentence = await getCardFusion(item.name, target.name);
       toast.success(sentence, { duration: 5000 });
@@ -171,15 +178,15 @@ export function StoryBible({ draftId, editor }: StoryBibleProps) {
             <button onClick={() => handleAIFill(element.id)}><Wand2 className="w-4 h-4" /></button>
           </div>
         </div>
-        {element.details?.backstory && <p className="text-sm mt-2"><strong>Backstory:</strong> {element.details.backstory}</p>}
-        {element.details?.core_motivation && <p className="text-sm mt-2"><strong>Core Motivation:</strong> {element.details.core_motivation}</p>}
+        {element.details?.backstory && <p className="text-sm mt-2"><strong>Backstory:</strong> {element.details.backstory as string}</p>}
+        {element.details?.core_motivation && <p className="text-sm mt-2"><strong>Core Motivation:</strong> {element.details.core_motivation as string}</p>}
       </div>
     );
 
     if (element.type === 'character') {
       return <DraggableCard element={element}>{card}</DraggableCard>;
     } else if (element.type === 'location') {
-      return <Droppable onDrop={(item) => handleCardDrop(item, element)} type="location">{card}</Droppable>;
+      return <Droppable onDrop={(item) => handleCardDrop(item, element)}>{card}</Droppable>;
     }
     return card;
   };

@@ -1,4 +1,3 @@
-
 'use server';
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -63,7 +62,7 @@ export async function updateVoiceProfile(userId: string, text: string) {
     }
   );
 
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from("voice_profiles")
     .select("id, profile")
     .eq("user_id", userId)

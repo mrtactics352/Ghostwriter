@@ -1,6 +1,7 @@
 'use client';
 
-import { EditorContent, useEditor, BubbleMenu } from "@tiptap/react";
+import { EditorContent, useEditor } from "@tiptap/react";
+import { BubbleMenu } from "@tiptap/extension-bubble-menu";
 import StarterKit from "@tiptap/starter-kit";
 import { Howl } from "howler";
 import { AlertCircle, Check, CloudOff, Focus, LoaderCircle, Save, Volume2, VolumeX, Palette, BookOpen } from "lucide-react";
@@ -90,7 +91,7 @@ export function WriterDraft({ draftId }: { draftId: string }) {
 
   const editor = useEditor({
     immediatelyRender: false,
-    extensions: [StarterKit],
+    extensions: [StarterKit, BubbleMenu],
     editorProps: {
       attributes: {
         class:
@@ -206,8 +207,8 @@ export function WriterDraft({ draftId }: { draftId: string }) {
       setBodyJson(mergedBody);
       setWordCount(mergedWordCount);
       setStatus("ready");
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Unable to load draft.");
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "Unable to load draft.");
       setStatus("error");
     }
   }, [draftId]);
@@ -258,9 +259,9 @@ export function WriterDraft({ draftId }: { draftId: string }) {
         setLastSavedAt(result.updated_at as string);
         setSaveState("saved");
         setIsDirty(false);
-      } catch (error) {
+      } catch (err) {
         setSaveState("error");
-        setErrorMessage(error instanceof Error ? error.message : "Auto-save failed.");
+        setErrorMessage(err instanceof Error ? err.message : "Auto-save failed.");
       }
     }, 30000);
 
