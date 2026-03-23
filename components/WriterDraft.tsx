@@ -1,7 +1,7 @@
 'use client';
 
 import { EditorContent, useEditor } from "@tiptap/react";
-import { BubbleMenu } from "@tiptap/extension-bubble-menu";
+// import { BubbleMenu } from "@tiptap/extension-bubble-menu";
 import StarterKit from "@tiptap/starter-kit";
 import { Howl } from "howler";
 import { AlertCircle, Check, CloudOff, Focus, LoaderCircle, Save, Volume2, VolumeX, Palette, BookOpen } from "lucide-react";
@@ -91,7 +91,7 @@ export function WriterDraft({ draftId }: { draftId: string }) {
 
   const editor = useEditor({
     immediatelyRender: false,
-    extensions: [StarterKit, BubbleMenu],
+    extensions: [StarterKit, /*BubbleMenu*/],
     editorProps: {
       attributes: {
         class:
@@ -348,9 +348,9 @@ export function WriterDraft({ draftId }: { draftId: string }) {
 
   return (
     <>
-      {editor && <BubbleMenu editor={editor} shouldShow={({ editor }) => editor.state.selection.content().size > 0}>
+      {/* {editor && <BubbleMenu editor={editor} shouldShow={({ editor }) => editor.state.selection.content().size > 0}>
         <SurgicalAIToolbar editor={editor} />
-      </BubbleMenu>}
+      </BubbleMenu>} */}
 
       <ProgressGlow progress={stats.levelProgress} />
       <ZenSidebar currentStreak={stats.currentStreak} dailyGoal={stats.dailyGoal} todayWords={stats.todayWords} />
