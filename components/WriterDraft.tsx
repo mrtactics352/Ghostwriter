@@ -3,7 +3,7 @@
 import { EditorContent, useEditor, BubbleMenu } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Howl } from "howler";
-import { AlertCircle, Check, CloudOff, Focus, LoaderCircle, Save, Volume2, VolumeX, Palette } from "lucide-react";
+import { AlertCircle, Check, CloudOff, Focus, LoaderCircle, Save, Volume2, VolumeX, Palette, BookOpen } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -17,6 +17,7 @@ import { PDFDownloadLink } from "@react-pdf/renderer";
 import StoryDocument from "@/components/StoryDocument";
 import CoverDesigner from "@/components/CoverDesigner";
 import { SurgicalAIToolbar } from "@/components/SurgicalAIToolbar";
+import { StoryBible } from "@/components/StoryBible";
 
 interface CoverDesign {
   title: string;
@@ -67,6 +68,7 @@ export function WriterDraft({ draftId }: { draftId: string }) {
   const [focusFlash, setFocusFlash] = useState(false);
   const [coverDesign, setCoverDesign] = useState<CoverDesign | null>(null);
   const [showCoverDesigner, setShowCoverDesigner] = useState(false);
+  const [showStoryBible, setShowStoryBible] = useState(false);
   const clickSoundRef = useRef<Howl | null>(null);
   const lastTypedAt = useRef(Date.now());
   const hydratedDraftRef = useRef<string | null>(null);
@@ -351,6 +353,7 @@ export function WriterDraft({ draftId }: { draftId: string }) {
 
       <ProgressGlow progress={stats.levelProgress} />
       <ZenSidebar currentStreak={stats.currentStreak} dailyGoal={stats.dailyGoal} todayWords={stats.todayWords} />
+      {showStoryBible && editor && <StoryBible draftId={draftId} editor={editor} />}
 
       {showCoverDesigner && <CoverDesigner draftId={draftId} initialCoverData={coverDesign} onClose={() => setShowCoverDesigner(false)} onSave={setCoverDesign} />}
 
@@ -404,6 +407,14 @@ export function WriterDraft({ draftId }: { draftId: string }) {
             >
               <Palette className="h-4 w-4" />
               Design Cover
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowStoryBible((value) => !value)}
+              className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 shadow-sm transition hover:bg-white"
+            >
+              <BookOpen className="h-4 w-4" />
+              Story Bible
             </button>
             <PDFDownloadLink
               document={<StoryDocument title={title} author={coverDesign?.author || 'Author Name'} content={editor?.getText() || ''} coverDesign={coverDesign} />}

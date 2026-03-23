@@ -84,3 +84,57 @@ Text: ${text}`;
     await supabase.from("voice_profiles").insert({ user_id: userId, profile: json });
   }
 }
+
+export async function createStoryElement(draftId: string, name: string, type: string) {
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookies().get(name)?.value
+        },
+      },
+    }
+  );
+
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  const { data, error } = await supabase
+    .from("story_elements")
+    .insert({ draft_id: draftId, user_id: user.id, name, type, details: {} })
+    .select();
+
+  if (error) {
+    throw error;
+  }
+
+  return data[0];
+}
+
+export async function getAICharacterDetails(name: string, draftContent: string) {
+  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+  const prompt = `Based on the following draft, generate a backstory and a core motivation for the character "${name}". Return the result as a JSON object with the keys "backstory" and "core_motivation".\n\nDraft:\n${draftContent}`;
+
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  const json = response.text().replace(/```json/g, "").replace(/```/g, "");
+
+  return JSON.parse(json);
+}
+
+export async function getCardFusion(character: string, location: string) {
+  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+  const prompt = `Generate a starter sentence for a scene featuring the character "${character}" at the location "${location}".`;
+
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+
+  return response.text();
+}
