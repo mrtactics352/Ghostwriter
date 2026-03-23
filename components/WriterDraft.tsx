@@ -1,6 +1,6 @@
 'use client';
 
-import { EditorContent, useEditor } from "@tiptap/react";
+import { EditorContent, useEditor, BubbleMenu } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Howl } from "howler";
 import { AlertCircle, Check, CloudOff, Focus, LoaderCircle, Save, Volume2, VolumeX, Palette } from "lucide-react";
@@ -16,6 +16,7 @@ import { getSupabaseClient } from "@/lib/supabaseClient";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import StoryDocument from "@/components/StoryDocument";
 import CoverDesigner from "@/components/CoverDesigner";
+import { SurgicalAIToolbar } from "@/components/SurgicalAIToolbar";
 
 interface CoverDesign {
   title: string;
@@ -344,6 +345,10 @@ export function WriterDraft({ draftId }: { draftId: string }) {
 
   return (
     <>
+      {editor && <BubbleMenu editor={editor} shouldShow={({ editor }) => editor.state.selection.content().size > 0}>
+        <SurgicalAIToolbar editor={editor} />
+      </BubbleMenu>}
+
       <ProgressGlow progress={stats.levelProgress} />
       <ZenSidebar currentStreak={stats.currentStreak} dailyGoal={stats.dailyGoal} todayWords={stats.todayWords} />
 
