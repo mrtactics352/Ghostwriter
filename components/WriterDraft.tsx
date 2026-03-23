@@ -17,6 +17,15 @@ import { PDFDownloadLink } from "@react-pdf/renderer";
 import StoryDocument from "@/components/StoryDocument";
 import CoverDesigner from "@/components/CoverDesigner";
 
+interface CoverDesign {
+  title: string;
+  subtitle: string;
+  author: string;
+  layout: string;
+  typography: string;
+  background_color: string;
+}
+
 type DraftRecord = {
   body: Record<string, unknown>;
   current_word_count: number;
@@ -55,7 +64,7 @@ export function WriterDraft({ draftId }: { draftId: string }) {
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [isIdle, setIsIdle] = useState(false);
   const [focusFlash, setFocusFlash] = useState(false);
-  const [coverDesign, setCoverDesign] = useState<any>(null);
+  const [coverDesign, setCoverDesign] = useState<CoverDesign | null>(null);
   const [showCoverDesigner, setShowCoverDesigner] = useState(false);
   const clickSoundRef = useRef<Howl | null>(null);
   const lastTypedAt = useRef(Date.now());

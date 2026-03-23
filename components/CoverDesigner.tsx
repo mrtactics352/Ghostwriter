@@ -4,7 +4,23 @@ import { useEffect, useState } from 'react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { Session } from '@supabase/supabase-js';
 
-const CoverDesigner = ({ draftId, initialCoverData, onClose, onSave }: any) => {
+interface CoverDesign {
+  title: string;
+  subtitle: string;
+  author: string;
+  layout: string;
+  typography: string;
+  background_color: string;
+}
+
+interface CoverDesignerProps {
+  draftId: string;
+  initialCoverData: CoverDesign | null;
+  onClose: () => void;
+  onSave: (coverDesign: CoverDesign) => void;
+}
+
+const CoverDesigner = ({ draftId, initialCoverData, onClose, onSave }: CoverDesignerProps) => {
   const [title, setTitle] = useState(initialCoverData?.title || 'Book Title');
   const [subtitle, setSubtitle] = useState(initialCoverData?.subtitle || 'Subtitle');
   const [author, setAuthor] = useState(initialCoverData?.author || 'Author Name');
