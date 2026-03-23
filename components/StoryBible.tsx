@@ -1,14 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type { Editor } from "@tiptap/react";
 import { Users, MapPin, Calendar, Book, Wand2 } from "lucide-react";
 import { createStoryElement, getAICharacterDetails, getCardFusion } from "@/app/actions/ai";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import toast from "react-hot-toast";
-import { useDrag, useDrop } from 'react-dnd';
+import { useDrag, useDrop, DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { DndProvider } from 'react-dnd';
 
 interface StoryBibleProps {
   draftId: string;
@@ -35,6 +34,7 @@ interface CardDragItem {
 }
 
 const DraggableCard = ({ element, children }: { element: StoryElement, children: React.ReactNode }) => {
+  const ref = useRef<HTMLDivElement>(null);
   const [{ isDragging }, drag] = useDrag(() => ({
     type: ItemTypes.CARD,
     item: { id: element.id, type: element.type, name: element.name },
@@ -43,14 +43,17 @@ const DraggableCard = ({ element, children }: { element: StoryElement, children:
     }),
   }));
 
+  drag(ref);
+
   return (
-    <div ref={drag as React.Ref<HTMLDivElement>} style={{ opacity: isDragging ? 0.5 : 1 }}>
+    <div ref={ref} style={{ opacity: isDragging ? 0.5 : 1 }}>
       {children}
     </div>
   );
 };
 
 const Droppable = ({ onDrop, children }: { onDrop: (item: CardDragItem) => void, children: React.ReactNode }) => {
+  const ref = useRef<HTMLDivElement>(null);
   const [{ isOver }, drop] = useDrop(() => ({
     accept: ItemTypes.CARD,
     drop: (item: CardDragItem) => onDrop(item),
@@ -59,8 +62,10 @@ const Droppable = ({ onDrop, children }: { onDrop: (item: CardDragItem) => void,
     }),
   }));
 
+  drop(ref);
+
   return (
-    <div ref={drop as React.Ref<HTMLDivElement>} className={`${isOver ? 'bg-ember/20' : ''}`}>
+    <div ref={ref} className={`${isOver ? 'bg-ember/20' : ''}`}>
       {children}
     </div>
   );
