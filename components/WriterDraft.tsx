@@ -5,17 +5,21 @@ import StarterKit from "@tiptap/starter-kit";
 import { Placeholder } from "@tiptap/extension-placeholder";
 import { useQuery } from "convex/react";
 
-// This matches your new "index" naming convention
+// Matches your manually created index files in the root convex folder
 import { api } from "@/convex/_generated/index"; 
 import { StoryBible } from "./StoryBible";
 
 interface WriterDraftProps {
+  // Using 'any' bypasses the Supabase User type and Convex Id types
   user: any; 
   draftId: any;
 }
 
 export function WriterDraft({ user, draftId }: WriterDraftProps) {
-  // Uses the 'api' object from your renamed index.js file
+  /** * This query uses the 'api' object from your manual index.js.
+   * If the build still complains about 'drafts', ensure your 
+   * index.js uses: export const api = anyApi;
+   */
   const draft = useQuery(api.drafts.get, { id: draftId });
 
   const editor = useEditor({
