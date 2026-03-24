@@ -25,19 +25,15 @@ export function AchievementToast({ t, achievement }: AchievementToastProps) {
             <Award className="h-10 w-10 text-amber-500" />
           </div>
           <div className="ml-3 flex-1">
-            <p className="text-sm font-medium text-gray-900">
-              {achievement.title}
-            </p>
-            <p className="mt-1 text-sm text-gray-500">
-              {achievement.description}
-            </p>
+            <p className="text-sm font-medium text-gray-900">{achievement.title}</p>
+            <p className="mt-1 text-sm text-gray-500">{achievement.description}</p>
           </div>
         </div>
       </div>
       <div className="flex border-l border-gray-200">
         <button
           onClick={() => toast.dismiss(t.id)}
-          className="flex w-full items-center justify-center rounded-none rounded-r-lg border border-transparent p-4 text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="flex w-full items-center justify-center rounded-none rounded-r-lg p-4 text-sm font-medium text-indigo-600 hover:text-indigo-500"
         >
           Close
         </button>
