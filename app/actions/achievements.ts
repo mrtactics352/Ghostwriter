@@ -20,7 +20,7 @@ export interface Achievement {
  * @returns The achievement details if newly unlocked, otherwise null.
  */
 export async function unlockAchievement(achievementSlug: string): Promise<Achievement | null> {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -66,7 +66,7 @@ export async function unlockAchievement(achievementSlug: string): Promise<Achiev
         .single();
 
     if (achievementError || !achievement) {
-        console.error(`Achievement with slug "${achievementSlug}" not found.`, achievementError);
+        console.error(`Achievement with slug \"${achievementSlug}\" not found.`, achievementError);
         return null;
     }
     
@@ -104,6 +104,6 @@ export async function unlockAchievement(achievementSlug: string): Promise<Achiev
     // 4. Optionally, update user's total XP
     // For now, we'll keep this separate. You might want a different function to recalculate user XP.
 
-    console.log(`Achievement "${achievement.name}" unlocked for user ${user.id}!`);
+    console.log(`Achievement \"${achievement.name}\" unlocked for user ${user.id}!`);
     return achievement as Achievement;
 }
