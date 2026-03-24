@@ -1,4 +1,3 @@
-
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
@@ -41,22 +40,30 @@ export function StoryElementEditor({
     if (!element) return;
     setIsSaving(true);
 
-    const supabase = getSupabaseClient();
-    const { data, error } = await supabase
-      .from("story_elements")
-      .update({ details, updated_at: new Date().toISOString() })
-      .eq("id", element.id)
-      .select()
-      .single();
+    try {
+      // 'as any' bypasses strict database typing that causes 'Expected 0 arguments' error
+      const supabase = getSupabaseClient() as any;
+      
+      const { data, error } = await supabase
+        .from("story_elements")
+        .update({ details, updated_at: new Date().toISOString() })
+        .eq("id", element.id)
+        .select()
+        .single();
 
-    if (error) {
-      toast.error("Failed to save changes.");
-      console.error("Error saving story element:", error);
-    } else {
-      toast.success(`Saved ${element.name}!`);
-      onSave(data as StoryElement);
+      if (error) {
+        toast.error("Failed to save changes.");
+        console.error("Error saving story element:", error);
+      } else {
+        toast.success(`Saved ${element.name}!`);
+        onSave(data as StoryElement);
+      }
+    } catch (err) {
+      toast.error("An unexpected error occurred.");
+      console.error(err);
+    } finally {
+      setIsSaving(false);
     }
-    setIsSaving(false);
   }, [element, details, onSave]);
 
   const handleDetailChange = (key: string, value: string) => {
@@ -99,36 +106,8 @@ export function StoryElementEditor({
                             <textarea 
                                 id="backstory" 
                                 rows={5}
-                                value={details.backstory || ''}
+                                value={(details as any).backstory || ''}
                                 onChange={e => handleDetailChange('backstory', e.target.value)}
                                 className="w-full rounded-xl bg-parchment p-4 text-sm outline-none ring-1 ring-black/5 focus:ring-2 focus:ring-ink/20 transition"
                                 placeholder={`What is ${element.name}\'s history, in brief?`}
                             />
-                        </div>
-                        <div className="space-y-2">
-                             <label htmlFor="core_motivation" className="text-sm lowercase font-sans text-ink/70 tracking-widest">Core Motivation</label>
-                            <input
-                              id="core_motivation"
-                              type="text"
-                              value={details.core_motivation || ''}
-                              onChange={e => handleDetailChange('core_motivation', e.target.value)}
-                              className="w-full rounded-xl bg-parchment px-4 py-3 text-sm outline-none ring-1 ring-black/5 focus:ring-2 focus:ring-ink/20 transition"
-                              placeholder={`What single goal drives ${element.name}?`}
-                            />
-                        </div>
-                    </> 
-                )}
-            </form>
-            <div className="p-6 bg-black/5 rounded-b-2xl flex justify-end gap-4">
-                <button type="button" onClick={onClose} className="px-5 py-2 text-sm text-ink/60 hover:text-ink transition">Cancel</button>
-                <button type="submit" onClick={handleSave} disabled={isSaving} className="inline-flex items-center justify-center gap-2 px-5 py-2 text-sm font-medium text-parchment bg-ink rounded-full hover:bg-ink/90 disabled:opacity-70">
-                    {isSaving && <LoaderCircle className="h-4 w-4 animate-spin" />} 
-                    {isSaving ? 'Saving...' : 'Save'}
-                </button>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-}
