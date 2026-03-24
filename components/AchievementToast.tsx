@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 
 /**
  * Neutralized AchievementToast
- * Removed the broken 'Achievement' type import to fix build failure.
+ * Removes broken type imports to clear build blocks.
  */
 
 interface AchievementToastProps {
