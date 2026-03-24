@@ -1,9 +1,39 @@
 "use client";
 
 import Link from "next/link";
-import { Sparkles, PenTool, Trophy, Zap } from "lucide-react";
+import { useState, useEffect } from "react";
+import { getSupabaseClient } from "@/lib/supabaseClient";
+import { Sparkles, PenTool, Trophy, Zap, LogOut, User as UserIcon, LoaderCircle } from "lucide-react";
 
 export default function LandingPage() {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const supabase = getSupabaseClient() as any;
+
+    // Check for active session on mount
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
+      setLoading(false);
+    };
+
+    checkUser();
+
+    // Listen for auth changes (login/logout)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    const supabase = getSupabaseClient() as any;
+    await supabase.auth.signOut();
+  };
+
   return (
     <div className="min-h-screen bg-parchment text-ink selection:bg-ink/10">
       {/* Navigation */}
@@ -14,12 +44,36 @@ export default function LandingPage() {
           </div>
           <span className="font-serif text-xl tracking-tight">Ghostwriter</span>
         </div>
-        <Link 
-          href="/dashboard" 
-          className="bg-ink text-parchment px-6 py-2.5 rounded-full text-sm font-medium hover:bg-ink/90 transition shadow-sm"
-        >
-          Open Studio
-        </Link>
+        
+        <div className="flex items-center gap-4">
+          {loading ? (
+            <LoaderCircle className="animate-spin h-5 w-5 text-ink/20" />
+          ) : user ? (
+            <div className="flex items-center gap-3">
+              <Link 
+                href="/dashboard" 
+                className="bg-ink text-parchment px-6 py-2.5 rounded-full text-sm font-medium hover:bg-ink/90 transition shadow-sm flex items-center gap-2"
+              >
+                <UserIcon size={14} />
+                My Studio
+              </Link>
+              <button 
+                onClick={handleSignOut}
+                className="p-2.5 text-ink/40 hover:text-ink transition hover:bg-ink/5 rounded-full"
+                title="Sign Out"
+              >
+                <LogOut size={18} />
+              </button>
+            </div>
+          ) : (
+            <Link 
+              href="/auth" 
+              className="bg-ink text-parchment px-6 py-2.5 rounded-full text-sm font-medium hover:bg-ink/90 transition shadow-sm"
+            >
+              Get Started
+            </Link>
+          )}
+        </div>
       </nav>
 
       {/* Hero Section */}
@@ -39,10 +93,10 @@ export default function LandingPage() {
           
           <div className="flex flex-wrap gap-4">
             <Link 
-              href="/dashboard" 
+              href={user ? "/dashboard" : "/auth"} 
               className="bg-ink text-parchment px-8 py-4 rounded-full text-lg font-medium hover:bg-ink/90 transition shadow-md flex items-center gap-3"
             >
-              Start Writing Free
+              {user ? "Continue Writing" : "Start Writing Free"}
               <PenTool className="h-5 w-5" />
             </Link>
           </div>
