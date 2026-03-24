@@ -5,13 +5,13 @@ import { WriterDraft } from "@/components/WriterDraft";
 import { redirect } from 'next/navigation';
 
 interface DraftPageProps {
-  params: Promise<{
+  params: {
     id: string;
-  }>;
+  };
 }
 
 export default async function DraftPage({ params }: DraftPageProps) {
-  const { id } = await params;
+  const { id } = params;
   const cookieStore = await cookies();
   const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,

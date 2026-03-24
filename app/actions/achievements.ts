@@ -77,7 +77,7 @@ export async function unlockAchievement(achievementSlug: string): Promise<Achiev
     try {
         // your achievement logic
     } catch (error) {
-        // Use 'error' instead of '_error' to satisfy the linter
+        // Change _error to error and log it to satisfy the linter
         console.error("Sync error:", error);
     }
 
