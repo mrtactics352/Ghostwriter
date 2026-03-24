@@ -34,13 +34,12 @@ export function DraftsDashboard() {
     try {
       const supabase = getSupabaseClient();
       
-      // Cast to any to bypass the 'never' type error in Vercel logs
-      const { data: { session } }: any = await supabase.auth.getSession();
+      // Neutralize session retrieval to bypass 'never' type errors
+      const { data: sessionData }: any = await supabase.auth.getSession();
+      const userId = sessionData?.session?.user?.id || "dummy-user";
 
-      // Neutralized session check for build stability
-      const userId = session?.user?.id || "dummy-user";
-
-      const [{ data: draftsData, error: draftsError }, { data: profileData, error: profileError }] = await Promise.all([
+      // Execute queries separately to prevent argument count errors
+      const [draftsRes, profileRes] = await Promise.all([
         supabase
           .from("drafts")
           .select("id, title, current_word_count, status, updated_at")
@@ -53,11 +52,11 @@ export function DraftsDashboard() {
           .maybeSingle(),
       ]);
 
-      if (draftsError) throw draftsError;
-      if (profileError) throw profileError;
+      if (draftsRes.error) throw draftsRes.error;
+      if (profileRes.error) throw profileRes.error;
 
-      setDrafts(draftsData ?? []);
-      setProfile(profileData);
+      setDrafts(draftsRes.data ?? []);
+      setProfile(profileRes.data);
       setErrorMessage(null);
     } catch (error: any) {
       setErrorMessage(error?.message || "Unable to load your drafts.");
@@ -76,9 +75,8 @@ export function DraftsDashboard() {
 
     try {
       const supabase = getSupabaseClient();
-      const { data: { session } }: any = await supabase.auth.getSession();
-
-      const userId = session?.user?.id || "dummy-user";
+      const { data: sessionData }: any = await supabase.auth.getSession();
+      const userId = sessionData?.session?.user?.id || "dummy-user";
 
       const { data, error } = await supabase
         .from("drafts")
