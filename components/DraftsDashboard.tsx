@@ -32,13 +32,13 @@ export function DraftsDashboard() {
 
   const loadDashboard = useCallback(async () => {
     try {
-      // Use 'any' cast on the client to bypass strict table name checking during build
+      // 'as any' bypasses strict database typing that causes 'Expected 0 arguments'
       const supabase = getSupabaseClient() as any;
       
       const { data: sessionData } = await supabase.auth.getSession();
       const userId = sessionData?.session?.user?.id || "dummy-user";
 
-      // Fixed: Type assertion on the client prevents the 'Expected 0 arguments' error
+      // Execute queries independently for maximum stability
       const draftsRes = await supabase
         .from("drafts")
         .select("id, title, current_word_count, status, updated_at")
