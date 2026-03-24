@@ -1,3 +1,5 @@
 {
+  "functions": "convex/",
+  "auth": false,
   "project": "adventurous-lynx-682"
 }

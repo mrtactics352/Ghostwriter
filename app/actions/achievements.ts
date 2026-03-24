@@ -72,6 +72,15 @@ export async function unlockAchievement(achievementSlug: string): Promise<Achiev
         return null;
     }
     
+    const progress = cookieStore.get("writing-progress")?.value;
+
+    try {
+        // your achievement logic
+    } catch (error) {
+        // Use 'error' instead of '_error' to satisfy the linter
+        console.error("Sync error:", error);
+    }
+
     // 2. Check if the user has already unlocked this achievement
     const { data: existingUnlock, error: checkError } = await supabase
         .from('user_achievements')
