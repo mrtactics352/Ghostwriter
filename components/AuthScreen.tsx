@@ -9,6 +9,8 @@ import { getSupabaseClient } from "@/lib/supabaseClient";
 
 type AuthMode = "signin" | "signup";
 
+// This is a comment to trigger a new deployment.
+
 export function AuthScreen() {
   const router = useRouter();
   const [mode, setMode] = useState<AuthMode>("signin");
