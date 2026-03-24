@@ -148,7 +148,7 @@ export function StoryBible({ draftId, editor }: StoryBibleProps) {
         const newAchievement = await unlockAchievement('first_element_created');
         if (newAchievement) {
             setTimeout(() => {
-                toast.custom((t) => <AchievementToast t={t} achievement={newAchievement} />, {
+                toast.custom(() => <AchievementToast achievement={newAchievement} />, {
                     duration: 5000,
                     position: 'bottom-center',
                 });
