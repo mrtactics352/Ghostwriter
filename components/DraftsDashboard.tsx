@@ -34,23 +34,22 @@ export function DraftsDashboard() {
     try {
       const supabase = getSupabaseClient();
       
-      // Neutralize session retrieval to bypass 'never' type errors
+      // Neutralize session retrieval
       const { data: sessionData }: any = await supabase.auth.getSession();
       const userId = sessionData?.session?.user?.id || "dummy-user";
 
-      // Execute queries separately to prevent argument count errors
-      const [draftsRes, profileRes] = await Promise.all([
-        supabase
-          .from("drafts")
-          .select("id, title, current_word_count, status, updated_at")
-          .eq("user_id", userId)
-          .order("updated_at", { ascending: false }),
-        supabase
-          .from("profiles")
-          .select("xp, level, current_streak")
-          .eq("id", userId)
-          .maybeSingle(),
-      ]);
+      // Fixed: Individual calls to bypass the 'Expected 0 arguments' error
+      const draftsRes = await supabase
+        .from("drafts")
+        .select("id, title, current_word_count, status, updated_at")
+        .eq("user_id", userId)
+        .order("updated_at", { ascending: false });
+
+      const profileRes = await supabase
+        .from("profiles")
+        .select("xp, level, current_streak")
+        .eq("id", userId)
+        .maybeSingle();
 
       if (draftsRes.error) throw draftsRes.error;
       if (profileRes.error) throw profileRes.error;
