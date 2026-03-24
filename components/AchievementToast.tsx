@@ -3,11 +3,6 @@
 import { Award } from "lucide-react";
 import toast from "react-hot-toast";
 
-/**
- * Neutralized AchievementToast
- * Removes broken type imports to clear build blocks.
- */
-
 interface AchievementToastProps {
   t: any;
   achievement: {
