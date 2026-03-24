@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "convex dev --until-success"
+    "postinstall": "npx convex deploy"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
