@@ -1,200 +1,94 @@
 "use client";
 
-import { LoaderCircle, LogOut, Plus, Sparkles } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
-
-import { createEmptyDocument } from "@/lib/editor";
+import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabaseClient";
+import { Plus, LogOut } from "lucide-react";
 
-type DraftSummary = {
-  current_word_count: number;
-  id: string;
-  status: string;
-  title: string;
-  updated_at: string;
-};
-
-type ProfileSummary = {
-  current_streak: number;
-  level: number;
-  xp: number;
-};
-
-export function DraftsDashboard() {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isCreating, setIsCreating] = useState(false);
-  const [drafts, setDrafts] = useState<DraftSummary[]>([]);
-  const [profile, setProfile] = useState<ProfileSummary | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const loadDashboard = useCallback(async () => {
-    try {
-      // 'as any' bypasses strict database typing that causes 'Expected 0 arguments'
-      const supabase = getSupabaseClient() as any;
-      
-      const { data: sessionData } = await supabase.auth.getSession();
-      const userId = sessionData?.session?.user?.id || "dummy-user";
-
-      // Execute queries independently for maximum stability
-      const draftsRes = await supabase
-        .from("drafts")
-        .select("id, title, current_word_count, status, updated_at")
-        .eq("user_id", userId)
-        .order("updated_at", { ascending: false });
-
-      const profileRes = await supabase
-        .from("profiles")
-        .select("xp, level, current_streak")
-        .eq("id", userId)
-        .maybeSingle();
-
-      if (draftsRes.error) throw draftsRes.error;
-      if (profileRes.error) throw profileRes.error;
-
-      setDrafts(draftsRes.data ?? []);
-      setProfile(profileRes.data);
-      setErrorMessage(null);
-    } catch (error: any) {
-      setErrorMessage(error?.message || "Unable to load your drafts.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [router]);
+export default function DraftsDashboard({ userId }: { userId: string }) {
+  const [drafts, setDrafts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    void loadDashboard();
-  }, [loadDashboard]);
+    async function fetchDrafts() {
+      try {
+        const supabase = getSupabaseClient() as any;
+        
+        // FIX: Ensure it is .order(...) and not .order without the function call
+        const { data, error: draftsError } = await supabase
+          .from("drafts")
+          .select("id, title, current_word_count, status, updated_at")
+          .eq("user_id", userId)
+          .order("updated_at", { ascending: false });
 
-  const handleCreateDraft = async () => {
-    setIsCreating(true);
-    setErrorMessage(null);
-
-    try {
-      const supabase = getSupabaseClient() as any;
-      const { data: sessionData } = await supabase.auth.getSession();
-      const userId = sessionData?.session?.user?.id || "dummy-user";
-
-      const { data, error } = await supabase
-        .from("drafts")
-        .insert({
-          body: createEmptyDocument(),
-          current_word_count: 0,
-          start_date: new Date().toISOString().slice(0, 10),
-          status: "draft",
-          title: "Untitled draft",
-          total_words_aim: 50000,
-          user_id: userId,
-        })
-        .select("id")
-        .single();
-
-      if (error) throw error;
-      router.push(`/drafts/${data.id}`);
-    } catch (error: any) {
-      setErrorMessage(error?.message || "Unable to create a draft.");
-    } finally {
-      setIsCreating(false);
+        if (draftsError) throw draftsError;
+        setDrafts(data || []);
+      } catch (err: any) {
+        console.error("Database error:", err.message);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
     }
-  };
 
-  const handleSignOut = async () => {
-    const supabase = getSupabaseClient();
-    await supabase.auth.signOut();
-    router.push("/");
-    router.refresh();
-  };
+    if (userId) fetchDrafts();
+  }, [userId]);
 
-  if (isLoading) {
-    return (
-      <div className="flex min-h-[70vh] items-center justify-center text-ink/60">
-        <LoaderCircle className="mr-3 h-5 w-5 animate-spin" />
-        Loading your studio…
-      </div>
-    );
-  }
+  if (loading) return <div className="p-8 text-ink/50">Loading your studio...</div>;
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 py-10">
-      <header className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-        <div className="space-y-3">
-          <p className="text-sm uppercase tracking-[0.3em] text-ink/45">Ghostwriter</p>
-          <h1 className="font-serif text-5xl text-ink sm:text-6xl">Your writing studio.</h1>
-          <p className="max-w-2xl text-lg leading-8 text-ink/65">
-            Open a draft, keep the streak alive, and let the editor handle backups and autosave.
-          </p>
+    <div className="max-w-5xl mx-auto p-8">
+      <header className="flex justify-between items-center mb-12">
+        <div>
+          <h1 className="text-4xl font-serif mb-2">Your writing studio.</h1>
+          <p className="text-ink/60">Open a draft, keep the streak alive, and let the editor handle backups.</p>
         </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={handleCreateDraft}
-            disabled={isCreating}
-            className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-3 text-sm font-medium text-parchment transition hover:bg-ink/90 disabled:opacity-70"
-          >
-            {isCreating ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+        <div className="flex gap-4">
+          <button className="flex items-center gap-2 bg-ink text-parchment px-6 py-2 rounded-full font-medium hover:bg-ink/90 transition shadow-sm">
+            <Plus size={18} />
             New draft
-          </button>
-          <button
-            type="button"
-            onClick={handleSignOut}
-            className="inline-flex items-center gap-2 rounded-full bg-white/75 px-4 py-3 text-sm text-ink/65 shadow-sm transition hover:bg-white"
-          >
-            <LogOut className="h-4 w-4" />
-            Sign out
           </button>
         </div>
       </header>
 
-      <section className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-[2rem] bg-white/70 p-6 shadow-ambient backdrop-blur">
-          <p className="text-xs uppercase tracking-[0.3em] text-ink/40">XP</p>
-          <p className="mt-4 text-3xl text-ink">{profile?.xp?.toLocaleString() ?? 0}</p>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-black/5">
+          <label className="text-[10px] uppercase tracking-widest text-ink/40 font-bold block mb-1">XP</label>
+          <span className="text-3xl font-serif">0</span>
         </div>
-        <div className="rounded-[2rem] bg-white/70 p-6 shadow-ambient backdrop-blur">
-          <p className="text-xs uppercase tracking-[0.3em] text-ink/40">Level</p>
-          <p className="mt-4 text-3xl text-ink">{profile?.level ?? 1}</p>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-black/5">
+          <label className="text-[10px] uppercase tracking-widest text-ink/40 font-bold block mb-1">Level</label>
+          <span className="text-3xl font-serif">1</span>
         </div>
-        <div className="rounded-[2rem] bg-white/70 p-6 shadow-ambient backdrop-blur">
-          <p className="text-xs uppercase tracking-[0.3em] text-ink/40">Current streak</p>
-          <p className="mt-4 text-3xl text-ink">{profile?.current_streak ?? 0} days</p>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-black/5">
+          <label className="text-[10px] uppercase tracking-widest text-ink/40 font-bold block mb-1">Current Streak</label>
+          <span className="text-3xl font-serif">0 days</span>
         </div>
-      </section>
+      </div>
 
-      <section className="space-y-4">
-        <div className="flex items-center gap-2 text-sm uppercase tracking-[0.3em] text-ink/35">
-          <Sparkles className="h-4 w-4" />
-          Drafts
-        </div>
-
-        <div className="grid gap-4">
-          {drafts.length === 0 ? (
-            <div className="rounded-[2rem] bg-white/70 p-8 text-ink/60 shadow-ambient backdrop-blur">
-              No drafts yet. Create your first one to begin.
-            </div>
-          ) : (
-            drafts.map((draft) => (
-              <Link
-                key={draft.id}
-                href={`/drafts/${draft.id}`}
-                className="rounded-[2rem] bg-white/70 p-6 shadow-ambient transition hover:-translate-y-0.5 hover:bg-white/90"
-              >
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <h2 className="font-serif text-2xl text-ink">{draft.title || "Untitled draft"}</h2>
-                    <p className="mt-2 text-sm text-ink/55">{draft.current_word_count.toLocaleString()} words • {draft.status}</p>
-                  </div>
-                  <p className="text-sm text-ink/45">Updated {new Date(draft.updated_at).toLocaleDateString()}</p>
-                </div>
-              </Link>
-            ))
-          )}
-        </div>
-      </section>
-
-      {errorMessage ? <p className="text-sm text-ember">{errorMessage}</p> : null}
+      <div className="space-y-4">
+        <label className="text-[10px] uppercase tracking-widest text-ink/40 font-bold flex items-center gap-2">
+          <Plus size={12} /> Drafts
+        </label>
+        
+        {error && <p className="text-red-500 text-sm bg-red-50 p-4 rounded-xl border border-red-100">{error}</p>}
+        
+        {drafts.length === 0 ? (
+          <div className="bg-white/50 border border-dashed border-black/10 p-12 rounded-2xl text-center">
+            <p className="text-ink/40 italic">No drafts yet. Create your first one to begin.</p>
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {drafts.map((draft) => (
+              <div key={draft.id} className="bg-white p-6 rounded-2xl border border-black/5 hover:border-ink/20 transition cursor-pointer flex justify-between items-center">
+                <h3 className="font-serif text-xl">{draft.title}</h3>
+                <span className="text-xs text-ink/40">{new Date(draft.updated_at).toLocaleDateString()}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
