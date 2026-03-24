@@ -6,8 +6,8 @@ import StarterKit from "@tiptap/starter-kit";
 import { Placeholder } from "@tiptap/extension-placeholder";
 import { User } from "@supabase/supabase-js";
 import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
+import { api } from "convex/_generated/api";
+import { Id } from "convex/_generated/dataModel";
 import {StoryBible} from "./StoryBible";
 
 interface WriterDraftProps {
