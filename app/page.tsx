@@ -1,6 +1,6 @@
 "use client";
 
-// FIX: We import without { } because DraftsDashboard is a default export
+// FIX: Removed { } to match the default export
 import DraftsDashboard from "@/components/DraftsDashboard";
 import { useState, useEffect } from "react";
 import { getSupabaseClient } from "@/lib/supabaseClient";
@@ -15,7 +15,11 @@ export default function DraftsPage() {
     });
   }, []);
 
-  if (!userId) return <div className="p-12 text-ink/30 italic">Verifying session...</div>;
+  if (!userId) return (
+    <div className="min-h-screen bg-parchment flex items-center justify-center">
+      <p className="text-ink/30 italic animate-pulse font-serif">Entering the studio...</p>
+    </div>
+  );
 
   return <DraftsDashboard userId={userId} />;
 }
